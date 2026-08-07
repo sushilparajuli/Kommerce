@@ -17,6 +17,7 @@ app.get("/test", shouldBeUser, (c) => {
   return c.json({
     message: "You are logged in!",
     userId: c.get("userId"),
+    status: 403,
   });
 });
 
