@@ -1,6 +1,8 @@
 import Fastify from "fastify";
-import { clerkPlugin, getAuth } from "@clerk/fastify";
+import { clerkPlugin } from "@clerk/fastify";
 import { shouldbeUser } from "./middleware/authMiddleware.js";
+import { connectOrderDB } from "@repo/order-db";
+import { orderRoute } from "./routes/order";
 const fastify = Fastify({
   logger: true,
 });
@@ -17,25 +19,37 @@ fastify.get("/health", async function handler(request, reply) {
 });
 
 // Declare a route
-fastify.get("/test", { preHandler: shouldbeUser }, (request, reply) => {
-  const { userId } = getAuth(request);
+fastify.get(
+  "/test",
+  {
+    preHandler: [shouldbeUser],
+  },
+  (request, reply) => {
+    if (!request.userId) {
+      return reply.code(401).send({
+        message: "You are not logged in",
+      });
+    }
 
-  if (!userId) {
-    return reply.send({
-      message: "You are not logged in",
+    return reply.status(200).send({
+      message: "Order Service authenticated",
+      userId: request.userId,
     });
-  }
+  },
+);
 
-  return reply.status(200).send({
-    message: "Order Service authenticated",
-    userId: request.userId,
-  });
-});
+fastify.register(orderRoute);
 
 // Run the server!
-try {
-  await fastify.listen({ port: 8001 });
-} catch (err) {
-  fastify.log.error(err);
-  process.exit(1);
-}
+const start = async () => {
+  try {
+    await connectOrderDB();
+    await fastify.listen({ port: 8001 });
+    console.log("Connected to MongoDB");
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+};
+
+start();
