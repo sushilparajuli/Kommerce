@@ -21,6 +21,26 @@ app.get("/test", shouldBeUser, (c) => {
   });
 });
 
+// app.post("/create-stripe-product", async (c) => {
+//   const res = await stripe.products.create({
+//     id: "123",
+//     name: "test-product",
+//     default_price_data: {
+//       currency: "usd",
+//       unit_amount: 10 * 100,
+//     },
+//   });
+
+//   return c.json(res);
+// });
+
+// app.get("/stripe-product-price", async (c) => {
+//   const res = await stripe.prices.list({
+//     product: "123",
+//   });
+
+//   return c.json(res);
+// });
 const start = async () => {
   try {
     serve(

@@ -1,19 +1,7 @@
-import { z } from "zod";
+import type { Product } from "@repo/product-db";
+import z from "zod";
 
-export type ProductType = {
-  id: string | number;
-  name: string;
-  shortDescription: string;
-  description: string;
-  price: number;
-  sizes: [string, ...string[]];
-  colors: [string, ...string[]];
-  images: Record<string, string>;
-};
-
-export type ProductsType = ProductType[];
-
-export type CartItemType = ProductType & {
+export type CartItemType = Product & {
   quantity: number;
   selectedSize: string;
   selectedColor: string;
