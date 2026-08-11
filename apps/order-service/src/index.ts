@@ -3,6 +3,7 @@ import { clerkPlugin } from "@clerk/fastify";
 import { shouldbeUser } from "./middleware/authMiddleware.js";
 import { connectOrderDB } from "@repo/order-db";
 import { orderRoute } from "./routes/order";
+import { consumer, producer } from "../utils/kafka.js";
 const fastify = Fastify({
   logger: true,
 });
@@ -43,7 +44,11 @@ fastify.register(orderRoute);
 // Run the server!
 const start = async () => {
   try {
-    await connectOrderDB();
+    Promise.all([
+      await connectOrderDB(),
+      await producer.connect(),
+      await consumer.connect(),
+    ]);
     await fastify.listen({ port: 8001 });
     console.log("Connected to MongoDB");
   } catch (err) {
