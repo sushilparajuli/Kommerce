@@ -19,7 +19,7 @@ const OrderSchema = new Schema(
       ],
       required: true,
     },
-    shippingAddress: { type: Number, required: true },
+    shippingAddress: { type: String, required: true },
   },
   { timestamps: true },
 );

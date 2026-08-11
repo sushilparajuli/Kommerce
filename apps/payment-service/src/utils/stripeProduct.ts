@@ -29,3 +29,13 @@ export const getStripeProductPrice = async (productId: string) => {
     return error;
   }
 };
+
+export const deleTeStripeProduct = async (productId: string) => {
+  try {
+    const res = await stripe.products.del(productId.toString());
+    return res;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+};
