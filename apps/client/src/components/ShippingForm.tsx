@@ -39,6 +39,7 @@ const ShippingForm = ({
           id="name"
           placeholder="John Doe"
           {...register("name")}
+          value="John Doe"
         />
         {errors.name && (
           <p className="text-xs text-red-500">{errors.name.message}</p>
@@ -51,6 +52,7 @@ const ShippingForm = ({
         <input
           className="border-b border-gray-200 py-2 outline-none text-sm"
           type="email"
+          value="johndoe@gmail.com"
           id="email"
           placeholder="johndoe@gmail.com"
           {...register("email")}
@@ -67,6 +69,7 @@ const ShippingForm = ({
           className="border-b border-gray-200 py-2 outline-none text-sm"
           type="text"
           id="phone"
+          value="123456789"
           placeholder="123456789"
           {...register("phone")}
         />
@@ -82,6 +85,7 @@ const ShippingForm = ({
           className="border-b border-gray-200 py-2 outline-none text-sm"
           type="text"
           id="address"
+          value="123 Main St, Anytown"
           placeholder="123 Main St, Anytown"
           {...register("address")}
         />
@@ -97,6 +101,7 @@ const ShippingForm = ({
           className="border-b border-gray-200 py-2 outline-none text-sm"
           type="text"
           id="city"
+          value="New York"
           placeholder="New York"
           {...register("city")}
         />

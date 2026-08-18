@@ -1,10 +1,13 @@
 import { serve } from "@hono/node-server";
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
+import { clerkMiddleware } from "@hono/clerk-auth";
 import { Hono } from "hono";
-import { shouldBeUser } from "./middleware/authMiddleware.js";
+import sessionRoute from "./routes/session.route";
+import { cors } from "hono/cors";
+import webhookRoute from "./routes/webhook.route";
 
 const app = new Hono();
 app.use("*", clerkMiddleware());
+app.use("*", cors({ origin: ["http://localhost:3002"] }));
 
 app.get("/health", (c) => {
   return c.json({
@@ -13,13 +16,8 @@ app.get("/health", (c) => {
     timestamp: Date.now(),
   });
 });
-app.get("/test", shouldBeUser, (c) => {
-  return c.json({
-    message: "You are logged in!",
-    userId: c.get("userId"),
-    status: 403,
-  });
-});
+app.route("/sessions", sessionRoute);
+app.route("/webhooks", webhookRoute);
 
 // app.post("/create-stripe-product", async (c) => {
 //   const res = await stripe.products.create({
