@@ -1,159 +1,228 @@
-# Turborepo starter
+# E-Commerce Monorepo
 
-This Turborepo starter is maintained by the Turborepo core team.
+This repository is a modular e-commerce platform built as a Turborepo monorepo. It combines a Next.js storefront, an admin dashboard, and multiple backend services that work together through shared libraries, authentication, and event-driven messaging.
 
-## Using this example
+## Overview
 
-Run the following command:
+The system is split into clear domains:
 
-```sh
-npx create-turbo@latest
+- Frontend apps for customer shopping and admin operations
+- Domain services for products, orders, and payments
+- Shared packages for database access, Kafka integration, and common types
+- Event-driven communication for decoupled service interactions
+
+This follows a service-oriented architecture inside a single monorepo, with each service owning a bounded responsibility while sharing configuration and type contracts across the workspace.
+
+## Architecture Pattern
+
+### 1. Monorepo + workspace packages
+
+The project uses Turborepo with pnpm workspaces. Shared code is centralized in packages and consumed by app/service packages through workspace dependencies.
+
+This pattern keeps the codebase organized by responsibility instead of merging everything into one application.
+
+### 2. Frontend / backend separation
+
+- `apps/client`: customer-facing storefront built with Next.js
+- `apps/admin`: admin dashboard built with Next.js
+- `apps/product-service`: Product domain API using Express
+- `apps/order-service`: Order domain API using Fastify
+- `apps/payment-service`: Payment/session orchestration service using Hono
+
+Each app/service has a clear boundary and its own runtime, making it easier to scale, deploy, and evolve independently.
+
+### 3. Shared infrastructure packages
+
+- `packages/product-db`: Prisma + PostgreSQL integration for product and catalog data
+- `packages/order-db`: MongoDB integration for order-related persistence
+- `packages/kafka`: Kafka producer/consumer client utilities
+- `packages/types`: shared TypeScript contracts and domain models
+- `packages/eslint-config` and `packages/typescript-config`: shared linting and TypeScript config
+
+This reduces duplication and enforces a common contract across services.
+
+### 4. Event-driven integration
+
+The backend services communicate using Kafka for asynchronous events and subscriptions. This is a classic event-driven architecture pattern where services publish business events and react to them without requiring tight, synchronous coupling.
+
+The pattern supports:
+
+- independent service execution
+- decoupled workflows for order/payment events
+- easier extensibility as new consumers are added
+
+### 5. Authenticated domain services
+
+The backend APIs use Clerk authentication middleware to protect routes and validate user access where necessary. This keeps authentication concerns consistent across domain services without forcing all logic into the frontend clients.
+
+## Repository Structure
+
+```text
+.
+├── apps/
+│   ├── admin/                 # Admin dashboard (Next.js)
+│   ├── client/                # Customer storefront (Next.js)
+│   ├── order-service/         # Order domain service (Fastify)
+│   ├── payment-service/       # Payment/session service (Hono)
+│   └── product-service/       # Product domain service (Express)
+├── packages/
+│   ├── eslint-config/         # Shared ESLint config
+│   ├── kafka/                 # Kafka client utilities
+│   ├── order-db/              # MongoDB connection and models
+│   ├── product-db/            # Prisma client + schema
+│   ├── types/                 # Shared TS types
+│   └── typescript-config/     # Shared tsconfig presets
+├── package.json               # Root workspace scripts
+├── pnpm-workspace.yaml        # Workspace config
+├── turbo.json                 # Turborepo task orchestration
+├── README.md                  # Project documentation
+└── pnpm-lock.yaml             # Dependency lockfile
 ```
 
-## What's inside?
+## Tech Stack
 
-This Turborepo includes the following packages/apps:
+### Frontend & UX
 
-### Apps and Packages
+- Next.js 15
+- React 19
+- TypeScript
+- Tailwind CSS
+- shadcn/ui style components
+- Recharts for admin dashboards and analytics
+- Zustand for client-side state management
+- Clerk for authentication and user identity
+- Stripe for checkout/payment flow integration
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+### Backend & APIs
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+- Express for product API layer
+- Fastify for order API layer
+- Hono for payment/session services
+- Node.js runtime
+- TypeScript across all services
+- Kafka for async messaging and event distribution
+- Prisma for relational product data access
+- MongoDB for order persistence
+- PostgreSQL via Prisma/Postgres integration in product domain
+- CORS, middleware patterns, and route-based API organization
 
-### Utilities
+### Data & Infrastructure
 
-This Turborepo has some additional tools already setup for you:
+- pnpm workspaces and Turborepo
+- Prisma schema and migrations
+- PostgreSQL for catalog/product domain
+- MongoDB for order domain
+- Kafka topics and subscriptions for service communication
+- Shared package contracts for common domain types
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+## Domain Coverage
 
-### Build
+This project covers the core domains of a commerce platform:
 
-To build all apps and packages, run the following command:
+### Product domain
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+- product catalog management
+- category management
+- product listing and filtering
+- product metadata and inventory-oriented operations
 
-```sh
-cd my-turborepo
-turbo build
+### Order domain
+
+- order creation and processing
+- order persistence and lifecycle tracking
+- order-related API workflows
+- commerce event handling around transactions
+
+### Payment domain
+
+- Stripe-based payments
+- checkout/session management
+- payment-related webhooks and flows
+- event-driven follow-up processing
+
+### User & auth domain
+
+- Clerk-based authentication
+- user identity verification
+- protected routes and service-level auth middleware
+
+### Admin domain
+
+- dashboard pages for analytics and management
+- product and user management interfaces
+- business oversight for commerce operations
+
+### Customer experience domain
+
+- storefront browsing
+- frontend flows for shopping and checkout
+- client-side app state and UI interactions
+
+## Core Workflows
+
+### Customer app
+
+The client app is responsible for storefront experiences, product browsing, authentication, and checkout flows.
+
+### Admin app
+
+The admin app acts as an internal dashboard for managing products, users, orders, and reporting.
+
+### Product service
+
+Handles product and category operations, with database access through the Prisma-backed product DB package.
+
+### Order service
+
+Owns order processing and order persistence, using Fastify and MongoDB.
+
+### Payment service
+
+Coordinates payment and session-related flows, using Hono and Stripe with Kafka integration for downstream processing.
+
+## Development Workflow
+
+From the root of the repository:
+
+```bash
+pnpm install
+pnpm dev
 ```
 
-Without global `turbo`, use your package manager:
+This runs the monorepo apps/services through Turbo. You can also target a specific app or service with filters if needed.
 
-```sh
-cd my-turborepo
-npx turbo build
-pnpm dlx turbo build
-pnpm exec turbo build
+Examples:
+
+```bash
+pnpm --filter admin dev
+pnpm --filter client dev
+pnpm --filter product-service dev
+pnpm --filter order-service dev
+pnpm --filter payment-service dev
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## Build and Type Check
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
+```bash
+pnpm build
+pnpm lint
+pnpm check-types
 ```
 
-Without global `turbo`:
+## Notes
 
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+- This project intentionally favors modular service boundaries over a single app architecture.
+- Shared packages are used for data access and contract reuse across services.
+- Kafka and event-driven messaging are central to the integration pattern.
+- The codebase is designed to be extensible for future services, more domains, and additional operational tooling.
 
-### Develop
+## Recommended Mental Model
 
-To develop all apps and packages, run the following command:
+Think of the system as:
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+- a monorepo shell for organization
+- multiple small apps/services for domain ownership
+- shared packages for cross-cutting infrastructure
+- event-driven communication for loose coupling
 
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+This is a strong pattern for building a scalable commerce platform where frontend, admin, and domain APIs evolve at different speeds while sharing common contracts and infrastructure.
