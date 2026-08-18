@@ -2,6 +2,23 @@ import { CartStoreActionsType, CartStoreStateType } from "@repo/types";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
+const safeStorage = {
+  getItem: (name: string) => {
+    if (typeof window === "undefined") return null;
+    return window.localStorage.getItem(name);
+  },
+  setItem: (name: string, value: string) => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(name, value);
+    }
+  },
+  removeItem: (name: string) => {
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(name);
+    }
+  },
+};
+
 const useCartStore = create<CartStoreStateType & CartStoreActionsType>()(
   persist(
     (set) => ({
@@ -49,7 +66,7 @@ const useCartStore = create<CartStoreStateType & CartStoreActionsType>()(
     }),
     {
       name: "cart",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => safeStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.hasHydrated = true;

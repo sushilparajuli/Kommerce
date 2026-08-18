@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 import { Card, CardContent, CardFooter, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -166,7 +167,7 @@ const CardList = ({ title }: { title: string }) => {
                   </CardTitle>
                   <Badge variant="secondary">{item.badge}</Badge>
                 </CardContent>
-                <CardFooter className="p-0">${item.count /1000}K</CardFooter>
+                <CardFooter className="p-0">${item.count / 1000}K</CardFooter>
               </Card>
             ))}
       </div>
