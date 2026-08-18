@@ -4,6 +4,7 @@ import { shouldbeUser } from "./middleware/authMiddleware.js";
 import { connectOrderDB } from "@repo/order-db";
 import { orderRoute } from "./routes/order";
 import { consumer, producer } from "../utils/kafka.js";
+import { runKafkaSubscribtions } from "../utils/subscription.js";
 const fastify = Fastify({
   logger: true,
 });
@@ -49,6 +50,7 @@ const start = async () => {
       await producer.connect(),
       await consumer.connect(),
     ]);
+    await runKafkaSubscribtions();
     await fastify.listen({ port: 8001 });
     console.log("Connected to MongoDB");
   } catch (err) {
