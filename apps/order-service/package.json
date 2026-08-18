@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@clerk/fastify": "^3.1.60",
-    "fastify": "^5.11.2"
+    "fastify": "^5.11.2",
+    "@repo/order-db": "workspace:*"
   }
 }
