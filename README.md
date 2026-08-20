@@ -10,10 +10,22 @@ The system is split into clear domains:
 - Domain services for products, orders, and payments
 - Shared packages for database access, Kafka integration, and common types
 - Event-driven communication for decoupled service interactions
+- Agent-based coordination using domain-specific instructions and a repo-level orchestrator
 
 This follows a service-oriented architecture inside a single monorepo, with each service owning a bounded responsibility while sharing configuration and type contracts across the workspace.
 
 ## Architecture Pattern
+
+### Agentic workflow model
+
+This repo is designed to work well with an agentic multi-agent setup:
+
+- an orchestrator agent routes the task to the correct domain
+- domain agents operate inside their service or app boundary
+- shared packages hold common contracts and infrastructure logic
+- verification is required before work is considered complete
+
+This pattern scales better than a single broad agent because each unit has a clear owner, responsibility, and validation target.
 
 ### 1. Monorepo + workspace packages
 
@@ -158,6 +170,60 @@ This project covers the core domains of a commerce platform:
 - frontend flows for shopping and checkout
 - client-side app state and UI interactions
 
+## Multi-Agent Ownership Model
+
+The repo is organized to support domain-based agents.
+
+### Orchestrator agent
+
+- decides which domain owns a task
+- breaks work into manageable units
+- coordinates cross-service contract updates
+- ensures verification happens before completion
+
+### Client agent
+
+Scope: `apps/client/**`
+
+- storefront UX and customer flows
+- frontend auth and payments integration
+- product browsing and checkout UI
+
+### Admin agent
+
+Scope: `apps/admin/**`
+
+- admin dashboards and management screens
+- reporting and business-facing interfaces
+
+### Product service agent
+
+Scope: `apps/product-service/**` and `packages/product-db/**`
+
+- product/category APIs
+- Prisma access and product data logic
+
+### Order service agent
+
+Scope: `apps/order-service/**` and `packages/order-db/**`
+
+- order lifecycle, Mongo persistence, and event handling
+
+### Payment service agent
+
+Scope: `apps/payment-service/**`
+
+- Stripe and session flows
+- payment webhooks and service-side auth
+
+### Shared infra agent
+
+Scope: `packages/**`, root config files, and workspace tooling
+
+- shared types
+- package contracts
+- build and monorepo configuration
+
 ## Core Workflows
 
 ### Customer app
@@ -209,12 +275,21 @@ pnpm lint
 pnpm check-types
 ```
 
+## Agent Working Rules
+
+- each task should be routed to the domain that owns it
+- agents should not edit outside their domain unless a shared contract requires it
+- verification must happen with the smallest relevant command
+- secrets should remain in local `.env` files and example values should live in `.env.example`
+- shared package changes should be reviewed before downstream services are updated
+
 ## Notes
 
 - This project intentionally favors modular service boundaries over a single app architecture.
 - Shared packages are used for data access and contract reuse across services.
 - Kafka and event-driven messaging are central to the integration pattern.
 - The codebase is designed to be extensible for future services, more domains, and additional operational tooling.
+- The repo is structured to support scaling with a multi-agent workflow without losing service ownership or contract clarity.
 
 ## Recommended Mental Model
 
